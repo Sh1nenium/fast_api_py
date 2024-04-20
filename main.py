@@ -41,10 +41,15 @@ async def add_golden_voice_image(
 
 @app.delete("/api/golden-voice-images/{id}")
 async def delete_golden_voice_image(id:int, response: Response, db: Session = Depends(get_db)):
-    db.query(GoldenVoiceImage).filter(GoldenVoiceImage.id == id).first()
+    deleted_image = db.query(GoldenVoiceImage).filter(GoldenVoiceImage.id == id).delete()
 
-    response.status_code = 204
-    return {"message": "Golden voice image deleted"}
+    if deleted_image == 0:
+        response.status_code = 404
+        return {"message": "Golden Voice Image not found"}
+    
+    db.commit()
+    
+    return id
 
 @app.post("/api/other-voice-images")
 async def add_other_voice_image(request:OtherVoiceImageSchema, db: Session = Depends(get_db)):
